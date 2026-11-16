@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ZoomPro</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <header>
+    <div class="brand">
+      <span class="logo"><svg viewBox="0 0 16 16"><circle cx="7" cy="7" r="4.6" /><path d="M10.4 10.4 14 14" /><path d="M5 7h4M7 5v4" /></svg></span>
+      <span>Zoom<b>Pro</b></span>
+    </div>
+    <div class="presets">
+      <select id="presetSel" title="Your presets"><option value="">Presets</option></select>
+      <button id="presetSave" class="icon" title="Save current settings as a preset"><svg viewBox="0 0 16 16"><path d="M8 3v10M3 8h10" /></svg></button>
+      <button id="presetDel" class="icon" title="Delete the selected preset"><svg viewBox="0 0 16 16"><path d="M3 8h10" /></svg></button>
+    </div>
+  </header>
+
+  <div class="seg main" id="mode">
+    <button data-v="continuo">Continuous</button>
+    <button data-v="animado">Animated</button>
+    <button data-v="abrupto">Punch-in</button>
+  </div>
+
+  <section>
+    <div class="row">
+      <label>Zoom</label>
+      <input type="range" id="zoomR" min="100" max="200" step="1" />
+      <div class="num"><input type="number" id="zoom" min="10" max="1000" step="1" /><span>%</span></div>
+    </div>
+    <div class="row only-continuo only-animado">
+      <label title="Scale the zoom starts from (or returns to)">Base</label>
+      <input type="range" id="baseR" min="100" max="200" step="1" />
+      <div class="num"><input type="number" id="base" min="10" max="1000" step="1" /><span>%</span></div>
+    </div>
+  </section>
+
+  <section class="only-animado">
+    <div class="seg" id="dir">
+      <button data-v="in">Zoom In</button>
+      <button data-v="out">Zoom Out</button>
+      <button data-v="inout">In → Out</button>
+    </div>
+    <div class="row">
+      <label>Duration</label>
+      <input type="range" id="durR" min="0.1" max="4" step="0.05" />
+      <div class="num"><input type="number" id="dur" min="0.04" max="60" step="0.05" /><span>s</span></div>
+    </div>
+    <div class="row hide-inout">
+      <label>Animate at</label>
+      <div class="seg inline" id="at">
+        <button data-v="start">Start</button>
+        <button data-v="end">End</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="only-animado only-abrupto hide-inout" title="After the animation the zoom keeps drifting slowly until the end of the layer">
+    <div class="row">
+      <label class="switch"><input type="checkbox" id="cont" /><i></i><span>Drift</span></label>
+      <input type="range" id="driftR" min="1" max="30" step="0.5" />
+      <div class="num"><input type="number" id="drift" min="0.5" max="100" step="0.5" /><span>%</span></div>
+    </div>
+  </section>
+
+  <div class="duo">
+    <section class="tile only-continuo only-animado">
+      <div class="tile-head"><span class="cap">Curve</span></div>
+      <canvas id="curve" title="Drag the handles to customize"></canvas>
+      <select id="curveSel" title="Animation curve"></select>
+    </section>
+    <section class="tile">
+      <div class="tile-head"><span class="cap">Center</span><span class="val" id="centerTxt"></span></div>
+      <div class="square" id="square" title="Click or drag. It snaps to the grid points when close.">
+        <div class="frame" id="frame">
+          <div class="crop" id="crop"></div>
+          <div class="dot" id="dot"></div>
+        </div>
+      </div>
+      <div class="legend"><i></i> visible after zoom</div>
+    </section>
+  </div>
+
+  <div class="opts">
+    <label class="switch" title="Creates a separate zoom for each selected clip"><input type="checkbox" id="perClip" /><i></i><span>Per clip</span></label>
+    <label class="switch"><input type="checkbox" id="mblur" /><i></i><span>Motion blur</span></label>
+  </div>
+
+  <div class="actions">
+    <button id="apply" class="primary"><svg viewBox="0 0 16 16"><circle cx="7" cy="7" r="4.6" /><path d="M10.4 10.4 14 14" /></svg><span>Apply zoom</span></button>
+    <button id="undo" class="icon big" title="Undo the last zoom created"><svg viewBox="0 0 16 16"><path d="M5 4 2 7l3 3" /><path d="M2.5 7H10a3.5 3.5 0 0 1 0 7H7" /></svg></button>
+  </div>
+  <div id="status"></div>
+
+  <div id="nameBox" class="modal hidden">
+    <div class="card">
+      <b>Preset name</b>
+      <input type="text" id="presetName" class="text" />
+      <div class="btns">
+        <button id="nameCancel" class="ghost">Cancel</button>
+        <button id="nameOk" class="primary small">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="tplBox" class="modal hidden">
+    <div class="card">
+      <b>This project needs an adjustment layer</b>
+      <p>You only need to do this once per project:</p>
+      <ol>
+        <li>In the <b>Project</b> panel: <b>New Item</b> (or <i>File › New</i>) › <b>Adjustment Layer</b> › OK.</li>
+        <li>Click <b>Try again</b>.</li>
+      </ol>
+      <p class="dim">Already have one with another name? Select it in the Project panel and click <b>Use selected</b>.</p>
+      <div class="btns">
+        <button id="tplUse" class="ghost">Use selected</button>
+        <button id="tplRetry" class="primary small">Try again</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/curves.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>
